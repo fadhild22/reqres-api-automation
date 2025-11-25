@@ -1,0 +1,251 @@
+{
+	"info": {
+		"_postman_id": "60ce0480-16f8-48eb-81e3-3b4d2c99666a",
+		"name": "Latihan QA Dasar",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49711459",
+		"_collection_link": "https://muhammadfadhildarussalam-fd-4242844.postman.co/workspace/Muhammad-Fadhil-Darussalam's-Wo~d24ab610-0ec2-4c18-891f-617b0d6ca75b/collection/49711459-60ce0480-16f8-48eb-81e3-3b4d2c99666a?action=share&source=collection_link&creator=49711459"
+	},
+	"item": [
+		{
+			"name": "Get List Users",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Tes 1: Pastikan Server Merespon Sukses (200 OK)\r",
+							"pm.test(\"Status Code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Tes 2: Validasi Nama User\r",
+							"pm.test(\"Cek apakah user pertama adalah Michael\", function(){\r",
+							"    // 1. Kita ambil dulu seluruh data JSON-nya\r",
+							"    var jsonData = pm.response.json();\r",
+							"\r",
+							"    // 2. Kita ambil data orang pertama (urutan ke-0 di komputer)\r",
+							"    // Di bahasa pemrograman, hitungan dimulai dari 0, bukan 1.\r",
+							"    var orangPertama = jsonData.data[0];\r",
+							"\r",
+							"    // 3. Kita bandingkan (Assert)\r",
+							"    pm.expect(orangPertama.first_name).to.eql(\"Michael\");\r",
+							"\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/users?page=2",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create User Manual",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// 1. Validasi Status Code (Pastikan sesuai dengan hasilmu, 200 atau 201)\r",
+							"pm.test(\"Status code harus sukses\", function () {\r",
+							"    pm.response.to.be.success;\r",
+							"});\r",
+							"\r",
+							"// 2. Persiapan Data: Ambil isi JSON respon\r",
+							"var jsonData = pm.response.json();\r",
+							"var requestData = JSON.parse(pm.request.body.raw);\r",
+							"\r",
+							"// 3. Validasi Data Statis (Value Validation)\r",
+							"pm.test(\"Nama harus sesuai dengan yang dikirim(Dinamis)\", function(){\r",
+							"    pm.expect(jsonData.name).to.eql(requestData.name);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Job harus sesuai(Dinamis)\", function () {\r",
+							"    pm.expect(jsonData.job).to.eql(requestData.job);\r",
+							"});\r",
+							"\r",
+							"// 4. Validasi Data Dinamis (Schema/Structure Validation)\r",
+							"// Kita tidak tahu ID-nya berapa (karena acak), tapi kita harus pastikan ID-nya ADA.\r",
+							"pm.test(\"Harus memiliki ID generate dari server\", function(){\r",
+							"    pm.expect(jsonData).to.have.property(\"id\");\r",
+							"});\r",
+							"\r",
+							"// 5. Saving ID Supaya bisa dipakai oleh request lain (PUT/DELETE)\r",
+							"pm.environment.set(\"user_id\", jsonData.id);\r",
+							"console.log(\"ID User berhasil disimpan: \"+ jsonData.id);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Fairuz\",\r\n    \"job\": \"QA\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/users",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "x-api-key",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Fairuz\",\r\n    \"job\": \"QA Lead\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/users/{{user_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"{{user_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"User berhasil dihapus(204 No Content)\", function(){\r",
+							"    pm.response.to.have.status(204);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/users/{{user_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"{{user_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": ""
+		}
+	]
+}
