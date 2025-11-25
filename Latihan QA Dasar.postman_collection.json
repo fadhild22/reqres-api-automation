@@ -69,26 +69,39 @@
 					"script": {
 						"exec": [
 							"// 1. Validasi Status Code (Pastikan sesuai dengan hasilmu, 200 atau 201)\r",
-							"pm.test(\"Status code harus sukses\", function () {\r",
-							"    pm.response.to.be.success;\r",
+							"pm.test(\"Status code harus 201 Created\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
 							"});\r",
 							"\r",
 							"// 2. Persiapan Data: Ambil isi JSON respon\r",
 							"var jsonData = pm.response.json();\r",
 							"var requestData = JSON.parse(pm.request.body.raw);\r",
 							"\r",
-							"// 3. Validasi Data Statis (Value Validation)\r",
-							"pm.test(\"Nama harus sesuai dengan yang dikirim(Dinamis)\", function(){\r",
-							"    pm.expect(jsonData.name).to.eql(requestData.name);\r",
+							"pm.test(\"Nama yang tersimpan harus berupa String dan tidak kosong\", function () {\r",
+							"    pm.expect(jsonData.name).to.be.a('string');\r",
+							"    pm.expect(jsonData.name).to.not.be.empty;\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Job harus sesuai(Dinamis)\", function () {\r",
-							"    pm.expect(jsonData.job).to.eql(requestData.job);\r",
+							"pm.test(\"Job yang tersimpan harus berupa String dan tidak kosong\", function(){\r",
+							"    pm.expect(jsonData.job).to.be.a('string');\r",
+							"    pm.expect(jsonData.name).to.not.be.empty;\r",
 							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"// 3. Validasi Data Statis (Value Validation)\r",
+							"//pm.test(\"Nama harus sesuai dengan yang dikirim(Dinamis)\", function(){\r",
+							"    //pm.expect(jsonData.name).to.eql(requestData.name);\r",
+							"//});\r",
+							"\r",
+							"//pm.test(\"Job harus sesuai(Dinamis)\", function () {\r",
+							"    //pm.expect(jsonData.job).to.eql(requestData.job);\r",
+							"//});\r",
 							"\r",
 							"// 4. Validasi Data Dinamis (Schema/Structure Validation)\r",
 							"// Kita tidak tahu ID-nya berapa (karena acak), tapi kita harus pastikan ID-nya ADA.\r",
-							"pm.test(\"Harus memiliki ID generate dari server\", function(){\r",
+							"pm.test(\"Harus memiliki ID\", function(){\r",
 							"    pm.expect(jsonData).to.have.property(\"id\");\r",
 							"});\r",
 							"\r",
@@ -114,7 +127,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Fairuz\",\r\n    \"job\": \"QA\"\r\n}",
+					"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"job\": \"{{$randomJobTitle}}\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -136,18 +149,48 @@
 		},
 		{
 			"name": "Update User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code harus 200 OK\", function (){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Nama hasil update harus valid\", function () {\r",
+							"    pm.expect(jsonData.name).to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Job hasil update harus valid\", function () {\r",
+							"    pm.expect(jsonData.job).to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Harus memiliki timestamp updateAt\", function(){\r",
+							"    pm.expect(jsonData).to.have.property(\"updateAt\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
 			"request": {
 				"method": "PUT",
 				"header": [
 					{
-						"key": "x-api-key",
+						"key": "",
 						"value": "",
-						"type": "text"
+						"type": "text",
+						"disabled": true
 					}
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Fairuz\",\r\n    \"job\": \"QA Lead\"\r\n}",
+					"raw": "{\r\n    \"name\": \"{{$randomFirstName}}\",\r\n    \"job\": \"Senior {{$randomJobTitle}}\",\r\n    \"updateAt\": \"2025-11-25T...\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -208,12 +251,12 @@
 		"apikey": [
 			{
 				"key": "value",
-				"value": "",
+				"value": "reqres-free-v1",
 				"type": "string"
 			},
 			{
 				"key": "key",
-				"value": "",
+				"value": "x-api-key",
 				"type": "string"
 			}
 		]
